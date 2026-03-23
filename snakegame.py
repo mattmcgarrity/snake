@@ -48,7 +48,7 @@ class SnakeGame:
         self.hard_button = DifficultyButton(self, "Hard", 350, 600)
 
         # Initialize unselected difficulty level
-        self.difficulty_level = ""
+        self.difficulty_level = 'normal'
 
         # Create a grid for the game
         self.grid_positions = []
@@ -60,6 +60,10 @@ class SnakeGame:
                        self.settings.snake_screen_height - self.settings.tile_size,
                        self.settings.tile_size):
                 self.grid_positions.append((x,y))
+
+        pygame.mixer.music.load('assets/menu_music.mp3')
+        pygame.mixer.music.set_volume(0.3)
+        pygame.mixer.music.play(-1)
             
 
     def _start_game(self):
@@ -86,6 +90,12 @@ class SnakeGame:
 
 		# Hide mouse cursor
         pygame.mouse.set_visible(False)
+
+        # Set music
+        pygame.mixer.Sound.play(self.settings.startup)
+        pygame.mixer.music.load('assets/game_music.mp3')
+        pygame.mixer.music.set_volume(0.3)
+        pygame.mixer.music.play(-1)
     
     def run_game(self):
         """Start the main loop for the game."""
@@ -102,6 +112,7 @@ class SnakeGame:
                 collide = pygame.Rect.colliderect(self.snake.rect, self.apple.rect)
             
                 if collide:
+                   pygame.mixer.Sound.play(self.settings.apple_sound)
                    self.apple.apple_count += 1
                    self.apple.spawn_apple(self.snake.snake_list, self.grid_positions)
                    self.stats.score += self.settings.apple_points*self.settings.score_scale*self.apple.apple_count
@@ -109,21 +120,22 @@ class SnakeGame:
                    self.sb.prep_level()
                    self.sb.check_high_score()
                    self.snake.increment_snake()
-                   self.snake.update()
-                   self.snake.track_snake_coordinates()
         
                 if self.snake.check_side_collisions() or self.snake.check_snake_collision():
+                    pygame.mixer.music.stop()
+                    pygame.mixer.Sound.play(self.settings.game_over)
                     self.stats.game_active = False
                     self.sb.save_high_score()
                     self.lb.add_new_leaderboard_score()
-                    sleep(2)
+                    sleep(4)
+                    pygame.mixer.music.load('assets/menu_music.mp3')
+                    pygame.mixer.music.play(-1)
                     pygame.mouse.set_visible(True)
 
                 if self.apple.apple_count >= self.settings.next_speed_increase:
                     self.settings.increase_speed(self.difficulty_level)
                     self.settings.next_speed_increase += self.settings.speed_step
                     self.settings.snake_level += 1
-
             
             self._update_screen()
             self.clock.tick(self.settings.FPS)
@@ -132,32 +144,57 @@ class SnakeGame:
         """Respond to keypresses and mouse events."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.sb.save_high_score()
-                self.lb.add_new_leaderboard_score()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
+                self._check_keydown_menu_events(event)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 self._check_play_button(mouse_pos)
                 self._check_difficulty_button(mouse_pos)
+    
+    def _prep_game(self):
+        """Reset all the game settings and stats for a fresh instance"""
+        # Reset the game settings. 
+        self.settings.initialize_dynamic_settings()
+
+		# Reset the game statistics.
+        self.stats.reset_stats()
+        self.stats.game_active = True
+        self.sb.prep_level()
+        self.sb.prep_score()
+
+		# Start game.
+        self._start_game()
+
     
     def _check_play_button(self, mouse_pos):
         """Start a new game when the player clicks Play."""
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
 
         if button_clicked and not self.stats.game_active:
-            # Reset the game settings. 
-            self.settings.initialize_dynamic_settings()
+            self._prep_game()
 
-			# Reset the game statistics.
-            self.stats.reset_stats()
-            self.stats.game_active = True
-            self.sb.prep_level()
-            self.sb.prep_score()
+    def _click_easy_button(self):
+        """Set the difficulty to easy when button is selected"""
+        self.difficulty_level = 'easy'
+        self.easy_button._change_button_color()
+        self.normal_button._revert_button_color()
+        self.hard_button._revert_button_color()
 
-			# Start game.
-            self._start_game()
+    def _click_normal_button(self):
+        """Set the difficulty to normal when button is selected"""
+        self.difficulty_level = 'normal'
+        self.easy_button._revert_button_color()
+        self.normal_button._change_button_color()
+        self.hard_button._revert_button_color()
+
+    def _click_hard_button(self):
+        """Set the difficulty to hard when button is selected"""
+        self.difficulty_level = 'hard'
+        self.easy_button._revert_button_color()
+        self.normal_button._revert_button_color()
+        self.hard_button._change_button_color()
 
     def _check_difficulty_button(self, mouse_pos):
         """Set the difficulty from user click."""
@@ -166,24 +203,30 @@ class SnakeGame:
         hard_button_clicked = self.hard_button.rect.collidepoint(mouse_pos)
 
         if easy_button_clicked:
-            self.difficulty_level = 'easy'
-            self.easy_button._change_button_color()
-            self.normal_button._revert_button_color()
-            self.hard_button._revert_button_color()
+            self._click_easy_button()
         elif normal_button_clicked:
-            self.difficulty_level = 'normal'
-            self.normal_button._change_button_color()
-            self.easy_button._revert_button_color()
-            self.hard_button._revert_button_color()
+            self._click_normal_button()
         elif hard_button_clicked:
-            self.difficulty_level = 'hard'
-            self.hard_button._change_button_color()
-            self.easy_button._revert_button_color()
-            self.normal_button._revert_button_color()
-        else:
-			# Set normal difficulty as default
-            self.difficulty_level = 'normal'
-    
+            self._click_hard_button()
+
+    def _check_keydown_menu_events(self, event):
+        """Checks for inputs related menu navigation and game start"""
+        if not self.stats.game_active:
+            if event.key == pygame.K_RETURN:
+                self._prep_game()
+            elif event.key == pygame.K_q:
+                sys.exit() 
+            elif event.key == pygame.K_UP:
+                if self.difficulty_level == 'normal':
+                    self._click_easy_button()
+                elif self.difficulty_level == 'hard':
+                    self._click_normal_button()
+            elif event.key == pygame.K_DOWN:
+                if self.difficulty_level == 'easy':
+                    self._click_normal_button()
+                elif self.difficulty_level == "normal":
+                    self._click_hard_button()
+
     def _check_keydown_events(self, event):
         """Respond to keypresses"""
         # Ensures snake cannot move in the same direction it came
@@ -255,13 +298,6 @@ class SnakeGame:
 
     def increment_snake(self):
         self.snake_len += 1
-
-    def apple_on_snake_check(self):
-        """Ensures that a new apple does not spawn on the snake's body"""
-        for x, y in self.snake.snake_list:
-            if self.apple.apple_x == x and self.apple.apple_y == y:
-                return True
-        return False
     
 if __name__ == '__main__': 
     # Make a game instance and run the game

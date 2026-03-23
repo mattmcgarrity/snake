@@ -7,7 +7,7 @@ from pygame.sprite import Sprite
 class Snake(Sprite):
 
     def __init__(self, snake_game): 
-        """Initialize the ship and set its starting position."""
+        """Initialize the snake and set its starting position."""
         super().__init__()
         self.screen = snake_game.screen
         self.settings = snake_game.settings

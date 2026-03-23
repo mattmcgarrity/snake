@@ -1,3 +1,5 @@
+import pygame
+
 class Settings:
 	""" A class to store all settings for Snake """
 
@@ -39,6 +41,11 @@ class Settings:
 
 		# Snake speed (Frame Rate)
 		self.FPS = 8
+
+		# Sounds
+		self.apple_sound = pygame.mixer.Sound("assets/apple_sound.mp3")
+		self.game_over = pygame.mixer.Sound("assets/game_over.mp3")
+		self.startup = pygame.mixer.Sound("assets/startup.mp3")
 
 		self.initialize_dynamic_settings()
 
