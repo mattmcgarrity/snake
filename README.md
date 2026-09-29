@@ -4,6 +4,8 @@ The classic Snake arcade game, written in Python with [pygame](https://www.pygam
 Steer the snake around the board, eat apples to grow and score points, and avoid
 running into the walls or your own tail. The longer you survive, the faster it gets.
 
+![Snake gameplay](docs/gameplay.gif)
+
 ## Features
 
 - Three difficulty levels (Easy, Normal, Hard) that control how quickly the game speeds up
