@@ -1,5 +1,4 @@
 import json
-from apple import Apple
 
 class GameStats:
 	"""Track statistics for Snake."""

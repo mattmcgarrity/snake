@@ -107,7 +107,7 @@ class SnakeGame:
             if self.stats.game_active:
                 self.snake.update()
                 self.snake.track_snake_coordinates()
-                self.snake.check_snake_collision
+                self.snake.check_snake_collision()
 
                 collide = pygame.Rect.colliderect(self.snake.rect, self.apple.rect)
             
@@ -295,9 +295,6 @@ class SnakeGame:
 		#	self.lb.show_leaderboard()
 
         pygame.display.flip()
-
-    def increment_snake(self):
-        self.snake_len += 1
     
 if __name__ == '__main__': 
     # Make a game instance and run the game

@@ -1,6 +1,5 @@
 import pygame.font
 import json
-from pygame.sprite import Group
 
 class Scoreboard:
 	"""A class to report scoring information."""
