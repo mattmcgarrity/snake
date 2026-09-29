@@ -1,11 +1,31 @@
+"""Leaderboard module for Snake.
+
+Defines the Leaderboard class, which stores and displays the top five
+scores, persisted in snake_top_five.json.
+"""
+
 import pygame.font
-import json
 
 class Leaderboard:
-	"""A class to keep up track of the top 10 high scores."""
+	"""Keep track of and display the top five high scores.
+
+	Attributes:
+		game: The running SnakeGame instance.
+		screen: The pygame display surface the leaderboard is drawn on.
+		screen_rect: Rect describing the full display surface.
+		settings: The shared Settings instance.
+		stats: The GameStats instance holding the current score.
+		text_color: RGB tuple used for leaderboard text.
+		font: pygame Font used to render leaderboard text.
+		top_five: List of the five best scores.
+	"""
 
 	def __init__(self, game):
-		"""Initialize leaderboard attributes."""
+		"""Initialize leaderboard attributes.
+
+		Args:
+			game: The running SnakeGame instance.
+		"""
 		self.game = game
 		self.screen = game.screen
 		self.screen_rect = self.screen.get_rect()
@@ -18,7 +38,7 @@ class Leaderboard:
 		self.top_five = [0, 0, 0, 0, 0]
 
 	def get_top_five(self):
-		"""Retrieve the top five best scores."""
+		"""Load the top five scores from snake_top_five.json."""
 		filename = 'snake_top_five.json'
 		with open(filename, 'r') as f:
 			score = f.read()
@@ -27,7 +47,7 @@ class Leaderboard:
 			f.close()
 
 	def add_new_leaderboard_score(self):
-		"""Add a new score to the top five."""
+		"""Add the current score to the top five if it qualifies."""
 		self.get_top_five()
 		lowest_score = min(self.top_five)
 
@@ -47,7 +67,7 @@ class Leaderboard:
 				f.write('\n'.join(self.top_five))
 
 	def prep_leaderboard(self):
-		"""Turn the leaderboard into a rendered image."""
+		"""Render the leaderboard and draw it to the screen."""
 		self.get_top_five()
 		
 		x = 0
@@ -59,22 +79,22 @@ class Leaderboard:
 		self.lb_title_image = self.font.render("LEADERBOARD", True,
 				self.text_color)
 
-		# Display the score in the middle of the screen.
+		# Position the title near the top of the leaderboard.
 		self.lb_title_rect = self.lb_title_image.get_rect()
 		self.lb_title_rect.right = self.screen_rect.right - 245
 		self.lb_title_rect.top = 96
 			
 		self.screen.blit(self.lb_title_image, self.lb_title_rect)
 
-		# Display score images.
+		# Display each score, one per row, rounded to the nearest ten.
 		for score in self.top_five:
 			rounded_score = round(score, -1)
 			score_str = "{:,}".format(rounded_score)
 
-			self.lb_image = self.font.render(str(position) + ". " + score_str, True,
-				self.text_color)
+			self.lb_image = self.font.render(str(position) + ". " + score_str, 
+			        True, self.text_color)
 
-			# Display the score in the middle of the screen.
+			# Position this row below the previous one.
 			self.lb_rect = self.lb_image.get_rect()
 			self.lb_rect.right = self.screen_rect.right - 300
 			self.lb_rect.top = y
