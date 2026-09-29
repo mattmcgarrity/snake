@@ -88,7 +88,7 @@ class Leaderboard:
 
 		# Display each score, one per row, rounded to the nearest ten.
 		for score in self.top_five:
-			rounded_score = round(score, -1)
+			rounded_score = round(score)
 			score_str = "{:,}".format(rounded_score)
 
 			self.lb_image = self.font.render(str(position) + ". " + score_str, 
