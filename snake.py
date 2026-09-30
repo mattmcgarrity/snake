@@ -31,7 +31,7 @@ class Snake(Sprite):
         moving_down: True while the snake is heading down.
     """
 
-    def __init__(self, snake_game): 
+    def __init__(self, snake_game):
         """Initialize the snake and set its starting position.
 
         Args:
@@ -44,10 +44,10 @@ class Snake(Sprite):
         self.screen_rect = snake_game.screen.get_rect()
         self.color = self.settings.snake_color
         self.rect = pygame.Rect(self.settings.snake_x, self.settings.snake_y,
-                                self.settings.snake_size, 
+                                self.settings.snake_size,
                                 self.settings.snake_size)
         self.snake_len = 1
-        # Coordinates of each body segment, starting with just the head.        
+        # Coordinates of each body segment, starting with just the head.
         self.snake_list = [[self.settings.snake_x, self.settings.snake_y]]
 
         # Store the snake's position as a decimal value.
@@ -59,18 +59,25 @@ class Snake(Sprite):
         self.moving_left = False
         self.moving_up = False
         self.moving_down = False
-    
+
+        # Direction of most recent move; none until the snake moves.
+        self.last_direction = None
+
     # Function to update snake direction based on user input.
     def update(self):
         """Move the snake's head one tile in its current direction."""
         if self.moving_right:
             self.x +=self.settings.tile_size
+            self.last_direction = 'right'
         elif self.moving_left:
             self.x -=self.settings.tile_size
+            self.last_direction = 'left'
         elif self.moving_up:
             self.y -=self.settings.tile_size
+            self.last_direction = 'up'
         elif self.moving_down:
             self.y +=self.settings.tile_size
+            self.last_direction = 'down'
 
         # Sync the head's rect with its new position.
         self.rect.x = self.x
@@ -80,26 +87,30 @@ class Snake(Sprite):
         """Place the snake's head at a random tile inside the play area."""
         new_pos = True
         while new_pos:
-            snake_x = random.randint(
-                self.settings.outline_size, 
-                self.settings.snake_screen_width 
-                - self.settings.snake_size - self.settings.outline_size)
-            snake_y = random.randint(
-                self.settings.outline_size, 
-                self.settings.snake_screen_height 
-                - self.settings.snake_size - self.settings.outline_size)
+            snake_x = random.randrange(
+                self.settings.outline_size,
+                self.settings.snake_screen_width
+                - self.settings.snake_size +1, self.settings.tile_size)
+            snake_y = random.randrange(
+                self.settings.outline_size,
+                self.settings.snake_screen_height
+                - self.settings.snake_size + 1, self.settings.tile_size)
 
             # Only accept positions that line up with the tile grid.
             if (snake_x % self.settings.tile_size == 0
                     and snake_y % self.settings.tile_size == 0):
-               self.x = snake_x
-               self.y = snake_y
-               new_pos = False
-    
+                self.x = snake_x
+                self.y = snake_y
+                new_pos = False
+
+        # Keep the body list and hitbox in sync with the new head position.
+        self.snake_list = [[self.x, self.y]]
+        self.rect.topleft = (self.x, self.y)
+
     def draw_snake(self):
         """Draw every segment of the snake to the screen."""
         for x, y in self.snake_list:
-            pygame.draw.rect(self.screen, self.color, (x, y, 
+            pygame.draw.rect(self.screen, self.color, (x, y,
                              self.settings.snake_size,
                              self.settings.snake_size))
 
@@ -137,7 +148,7 @@ class Snake(Sprite):
             bool: True if the head has hit any edge of the play area,
                 otherwise False.
         """
-        if ( 
+        if (
             self.x + self.settings.snake_size > self.settings.snake_screen_width or
             self.x < self.settings.outline_size or
             self.y + self.settings.snake_size > self.settings.snake_screen_height or

@@ -39,10 +39,10 @@ class Apple(Sprite):
         self.apple_x = 384
         self.apple_y = 340
 
-        self.rect = pygame.Rect(self.apple_x, self.apple_y, 
-                                self.settings.apple_size, 
+        self.rect = pygame.Rect(self.apple_x, self.apple_y,
+                                self.settings.apple_size,
                                 self.settings.apple_size)
-        
+
         self.apple_count = 0
 
     def spawn_apple(self, snake_positions, grid_positions):
@@ -62,11 +62,13 @@ class Apple(Sprite):
         ]
 
         self.apple_x, self.apple_y = random.choice(free_positions)
-    
+
+        self.rect.topleft = (self.apple_x, self.apple_y)
+
     def draw_apple(self):
         """Draw the apple to the screen"""
         # Rebuild the rect each frame so it tracks the latest spawn position.
-        self.rect = pygame.Rect(self.apple_x, self.apple_y, 
-                                self.settings.apple_size, 
+        self.rect = pygame.Rect(self.apple_x, self.apple_y,
+                                self.settings.apple_size,
                                 self.settings.apple_size)
         pygame.draw.rect(self.screen, self.color, self.rect)
