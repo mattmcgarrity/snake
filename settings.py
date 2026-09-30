@@ -28,7 +28,6 @@ class Settings:
         self.snake_screen_height = 640
 
         # Snake settings.
-        self.snake_speed = 0.25
         self.snake_color = (50, 205, 50)
         self.snake_size = 32
         self.snake_x = 304

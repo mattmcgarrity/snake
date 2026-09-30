@@ -60,17 +60,24 @@ class Snake(Sprite):
         self.moving_up = False
         self.moving_down = False
 
+        # Direction of most recent move; none until the snake moves.
+        self.last_direction = None
+
     # Function to update snake direction based on user input.
     def update(self):
         """Move the snake's head one tile in its current direction."""
         if self.moving_right:
             self.x +=self.settings.tile_size
+            self.last_direction = 'right'
         elif self.moving_left:
             self.x -=self.settings.tile_size
+            self.last_direction = 'left'
         elif self.moving_up:
             self.y -=self.settings.tile_size
+            self.last_direction = 'up'
         elif self.moving_down:
             self.y +=self.settings.tile_size
+            self.last_direction = 'down'
 
         # Sync the head's rect with its new position.
         self.rect.x = self.x
@@ -80,14 +87,14 @@ class Snake(Sprite):
         """Place the snake's head at a random tile inside the play area."""
         new_pos = True
         while new_pos:
-            snake_x = random.randint(
+            snake_x = random.randrange(
                 self.settings.outline_size,
                 self.settings.snake_screen_width
-                - self.settings.snake_size - self.settings.outline_size)
-            snake_y = random.randint(
+                - self.settings.snake_size +1, self.settings.tile_size)
+            snake_y = random.randrange(
                 self.settings.outline_size,
                 self.settings.snake_screen_height
-                - self.settings.snake_size - self.settings.outline_size)
+                - self.settings.snake_size + 1, self.settings.tile_size)
 
             # Only accept positions that line up with the tile grid.
             if (snake_x % self.settings.tile_size == 0
@@ -95,6 +102,10 @@ class Snake(Sprite):
                 self.x = snake_x
                 self.y = snake_y
                 new_pos = False
+
+        # Keep the body list and hitbox in sync with the new head position.
+        self.snake_list = [[self.x, self.y]]
+        self.rect.topleft = (self.x, self.y)
 
     def draw_snake(self):
         """Draw every segment of the snake to the screen."""

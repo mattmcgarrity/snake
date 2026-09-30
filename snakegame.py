@@ -89,12 +89,10 @@ class SnakeGame:
         # Create a grid of every tile position in the playable area.
         self.grid_positions = []
         for x in range(self.settings.outline_size,
-                       self.settings.snake_screen_width
-                       - self.settings.tile_size,
+                       self.settings.snake_screen_width,
                        self.settings.tile_size):
             for y in range(self.settings.outline_size,
-                           self.settings.snake_screen_height
-                           - self.settings.tile_size,
+                           self.settings.snake_screen_height,
                            self.settings.tile_size):
                 self.grid_positions.append((x,y))
 
@@ -110,7 +108,6 @@ class SnakeGame:
         Called from _prep_game() when the player clicks Play or presses
         Enter.
         """
-        self.stats.reset_stats()
 
         # Reset the snake to a single segment with no direction.
         self.snake.snake_len = 1
@@ -119,6 +116,7 @@ class SnakeGame:
         self.snake.moving_up = False
         self.snake.moving_left = False
         self.snake.moving_right = False
+        self.snake.last_direction = None
 
         self.snake.spawn_snake()
 
@@ -155,7 +153,6 @@ class SnakeGame:
             if self.stats.game_active:
                 self.snake.update()
                 self.snake.track_snake_coordinates()
-                self.snake.check_snake_collision()
 
                 # Check whether the snake's head has reached the apple.
                 collide = pygame.Rect.colliderect(self.snake.rect,
@@ -170,6 +167,14 @@ class SnakeGame:
                     self.stats.score += (self.settings.apple_points
                                          * self.settings.score_scale
                                          * self.apple.apple_count)
+
+                    # Speed the game up each time enough apples are eaten.
+                    if self.apple.apple_count >= self.settings.next_speed_increase:
+                        self.settings.increase_speed(self.difficulty_level)
+                        self.settings.next_speed_increase += self.settings.speed_step
+                        self.settings.snake_level += 1
+
+                    # Update the display after the level has changed.
                     self.sb.prep_score()
                     self.sb.prep_level()
                     self.sb.check_high_score()
@@ -185,15 +190,10 @@ class SnakeGame:
                     self.lb.add_new_leaderboard_score()
                     # Pause briefly so the game-over sound can play.
                     sleep(4)
+                    pygame.event.clear()
                     pygame.mixer.music.load('assets/menu_music.mp3')
                     pygame.mixer.music.play(-1)
                     pygame.mouse.set_visible(True)
-
-                # Speed the game up each time enough apples are eaten.
-                if self.apple.apple_count >= self.settings.next_speed_increase:
-                    self.settings.increase_speed(self.difficulty_level)
-                    self.settings.next_speed_increase += self.settings.speed_step
-                    self.settings.snake_level += 1
 
             self._update_screen()
             self.clock.tick(self.settings.FPS)
@@ -263,16 +263,17 @@ class SnakeGame:
         Args:
             mouse_pos: (x, y) position of the mouse click.
         """
-        easy_button_clicked = self.easy_button.rect.collidepoint(mouse_pos)
-        normal_button_clicked = self.normal_button.rect.collidepoint(mouse_pos)
-        hard_button_clicked = self.hard_button.rect.collidepoint(mouse_pos)
+        if not self.stats.game_active:
+            easy_button_clicked = self.easy_button.rect.collidepoint(mouse_pos)
+            normal_button_clicked = self.normal_button.rect.collidepoint(mouse_pos)
+            hard_button_clicked = self.hard_button.rect.collidepoint(mouse_pos)
 
-        if easy_button_clicked:
-            self._click_easy_button()
-        elif normal_button_clicked:
-            self._click_normal_button()
-        elif hard_button_clicked:
-            self._click_hard_button()
+            if easy_button_clicked:
+                self._click_easy_button()
+            elif normal_button_clicked:
+                self._click_normal_button()
+            elif hard_button_clicked:
+                self._click_hard_button()
 
     def _check_keydown_menu_events(self, event):
         """Handle keyboard input for menu navigation and starting the game.
@@ -307,27 +308,21 @@ class SnakeGame:
         Args:
             event: The pygame KEYDOWN event to handle.
         """
-        # Ensures snake cannot move in the same direction it came.
+        last = self.snake.last_direction
+
+        # A snake with a length of 1 has no body to run into, so it can reverse.
         if self.snake.snake_len == 1:
-            # A snake with a length of 1 can move in any direction.
-            if  event.key == pygame.K_RIGHT:
-                self._moving_right()
-            elif event.key == pygame.K_LEFT:
-                self._moving_left()
-            elif event.key == pygame.K_DOWN:
-                self._moving_down()
-            elif event.key == pygame.K_UP:
-                self._moving_up()
-        else:
-            # Ensure the snake cannot reverse into its own body.
-            if  event.key == pygame.K_RIGHT and self.snake.moving_left == False:
-                self._moving_right()
-            elif event.key == pygame.K_LEFT and self.snake.moving_right == False:
-                self._moving_left()
-            elif event.key == pygame.K_DOWN and self.snake.moving_up == False:
-                self._moving_down()
-            elif event.key == pygame.K_UP and self.snake.moving_down == False:
-                self._moving_up()
+            last = None
+            
+        # Ensure the snake cannot reverse into its own body.
+        if  event.key == pygame.K_RIGHT and last != 'left':
+            self._moving_right()
+        elif event.key == pygame.K_LEFT and last != 'right':
+            self._moving_left()
+        elif event.key == pygame.K_DOWN and last != 'up':
+            self._moving_down()
+        elif event.key == pygame.K_UP and last != 'down':
+            self._moving_up()
 
     def _moving_up(self):
         """Set the snake's direction to up."""
@@ -362,22 +357,21 @@ class SnakeGame:
         self.screen.fill(self.settings.bg_color)
         pygame.draw.rect(self.screen, self.settings.outline_colour,
                          self.screen.get_rect(), self.settings.outline_size)
-        self.snake.draw_snake()
-        self.apple.draw_apple()
         self.sb.show_overall_info()
 
-        # Show current score information during a game.
         if self.stats.game_active:
+            # Draw the snake, apple, current score and level.
+            self.snake.draw_snake()
+            self.apple.draw_apple()
             self.sb.show_game_info()
 
         # Draw the menu (buttons and leaderboard) if the game is inactive.
-        if not self.stats.game_active:
+        else:
             self.play_button.draw_button()
             self.easy_button.draw_button()
             self.normal_button.draw_button()
             self.hard_button.draw_button()
             self.lb.prep_leaderboard()
-            #	self.lb.show_leaderboard()
 
         pygame.display.flip()
 

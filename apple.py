@@ -63,6 +63,8 @@ class Apple(Sprite):
 
         self.apple_x, self.apple_y = random.choice(free_positions)
 
+        self.rect.topleft = (self.apple_x, self.apple_y)
+
     def draw_apple(self):
         """Draw the apple to the screen"""
         # Rebuild the rect each frame so it tracks the latest spawn position.
