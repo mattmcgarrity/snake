@@ -18,10 +18,15 @@ class Settings:
         # Screen settings.
         self.screen_width = 704
         self.screen_height = 704
-        self.bg_color = (20, 20, 20)
-        self.outline_colour = (40, 40, 40)
         self.outline_size = 64
         self.tile_size = 32
+
+        # Colors
+        self.bg_color = (20, 20, 20)
+        self.outline_colour = (40, 40, 40)
+
+        # Fonts
+        self.font_size_normal = 38
 
         # Playable area for snake to roam.
         self.snake_screen_width = 640
@@ -29,12 +34,12 @@ class Settings:
 
         # Snake settings.
         self.snake_color = (50, 205, 50)
-        self.snake_size = 32
+        self.snake_size = self.tile_size
         self.snake_x = 304
         self.snake_y = 340
 
         # Apple settings.
-        self.apple_size = 32
+        self.apple_size = self.tile_size
         self.apple_color = (255, 0, 0)
 
         # How quickly the game speeds up for each difficulty. Each value is
@@ -56,6 +61,9 @@ class Settings:
         self.apple_sound = pygame.mixer.Sound("assets/apple_sound.mp3")
         self.game_over = pygame.mixer.Sound("assets/game_over.mp3")
         self.startup = pygame.mixer.Sound("assets/startup.mp3")
+        self.menu_music = "assets/menu_music.mp3"
+
+        self.music_volume = 0.3
 
         self.initialize_dynamic_settings()
 

@@ -35,10 +35,16 @@ class Button:
         self.screen = game.screen
         self.screen_rect = self.screen.get_rect()
 
-        # Set the dimensions and properties of the button.
-        self.width, self.height = 200, 50
-        self.button_color = (0, 255, 0)
-        self.text_color = (255, 255, 255)
+        # Set colors to be used for buttons.
+        self.green = (0, 255, 0)
+        self.dark_gray = (60, 60, 60)
+        self.white = (255, 255, 255)
+
+        # Initialize dimensions and properties of the button.
+        self.width = 200
+        self.height = 50
+        self.button_color = self.green
+        self.text_color = self.white
         self.font = pygame.font.SysFont(None, 48)
 
         # Build the button's rect object and center it.
@@ -67,13 +73,13 @@ class Button:
     def _change_button_color(self):
         """Highlight the button to show it is selected.
 
-        Does nothing in the base class; overridden by DifficultyButton.
+        Overridden by DifficultyButton.
         """
 
     def _revert_button_color(self):
         """Restore the button's default colors when it is not selected.
 
-        Does nothing in the base class; overridden by DifficultyButton.
+        Overridden by DifficultyButton.
         """
 
 class DifficultyButton(Button):
@@ -96,8 +102,8 @@ class DifficultyButton(Button):
 
         # Set the dimensions and properties of the button.
         self.width, self.height = 160, 40
-        self.button_color = (60, 60, 60)
-        self.text_color = (0, 255, 0)
+        self.button_color = self.dark_gray
+        self.text_color = self.green
         self.font = pygame.font.SysFont(None, 48)
 
         # Build the button's rect object.
@@ -109,12 +115,12 @@ class DifficultyButton(Button):
 
     def _change_button_color(self):
         """Invert the button's colors to show it is selected."""
-        self.button_color = (0, 255, 0)
-        self.text_color = (60, 60, 60)
+        self.button_color = self.green
+        self.text_color = self.dark_gray
         self._prep_msg(self.msg)
 
     def _revert_button_color(self):
         """Restore the default colors when the button is not selected."""
-        self.button_color = (60, 60, 60)
-        self.text_color = (0, 255, 0)
+        self.button_color = self.dark_gray
+        self.text_color = self.green
         self._prep_msg(self.msg)

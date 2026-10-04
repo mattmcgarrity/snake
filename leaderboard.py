@@ -37,9 +37,12 @@ class Leaderboard:
         self.font = pygame.font.SysFont(None, 38)
         self.top_five = [0, 0, 0, 0, 0]
 
+        # File location for top five scores.
+        self.snake_top_five = "snake_top_five.json"
+
     def get_top_five(self):
         """Load the top five scores from snake_top_five.json."""
-        filename = 'snake_top_five.json'
+        filename = self.snake_top_five
         with open(filename, 'r') as f:
             score = f.read()
             score_ints = [int(x) for x in score.split()]
