@@ -97,8 +97,8 @@ class SnakeGame:
                 self.grid_positions.append((x,y))
 
         # Start the menu music, looping indefinitely.
-        pygame.mixer.music.load('assets/menu_music.mp3')
-        pygame.mixer.music.set_volume(0.3)
+        pygame.mixer.music.load(self.settings.menu_music)
+        pygame.mixer.music.set_volume(self.settings.music_volume)
         pygame.mixer.music.play(-1)
 
 
@@ -134,7 +134,7 @@ class SnakeGame:
         # Play the startup sound, then switch to the in-game music.
         pygame.mixer.Sound.play(self.settings.startup)
         pygame.mixer.music.load('assets/game_music.mp3')
-        pygame.mixer.music.set_volume(0.3)
+        pygame.mixer.music.set_volume(self.settings.music_volume)
         pygame.mixer.music.play(-1)
 
     def run_game(self):
@@ -191,7 +191,7 @@ class SnakeGame:
                     # Pause briefly so the game-over sound can play.
                     sleep(4)
                     pygame.event.clear()
-                    pygame.mixer.music.load('assets/menu_music.mp3')
+                    pygame.mixer.music.load(self.settings.menu_music)
                     pygame.mixer.music.play(-1)
                     pygame.mouse.set_visible(True)
 
